@@ -1,28 +1,219 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Hello!</title>
-    
-    <!-- import the webpage's stylesheet -->
-    <link rel="stylesheet" href="/style.css">
-    
-    <!-- import the webpage's javascript file -->
-    <script src="/script.js" defer></script>
-  </head>  
-  <body>
-    <h1>Hi there!</h1>
-    
-    <p>
-      I'm your cool new webpage. Made with <a href="https://glitch.com">Glitch</a>!
-    </p>
-
-    <!-- include the Glitch button to show what the webpage is about and
-          to make it easier for folks to view source and remix -->
-    <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
-    <script src="https://button.glitch.me/button.js" defer></script>
-  </body>
+<html>
+    <head>
+        <title>MHCI Unit 2 Lab</title>
+        <script>
+        let cursor = null;
+        let cursor_y = 0;
+        let cursor_height = 0;
+        let cursor_width = 0;
+        let select_cursor = null;
+        let bar_top = 0;
+        let bar_height = 0;
+        let selection_started = false;
+        let last_selection = 0;
+        let selected_id = -1;
+        
+        /*
+         * A device orientation callback function, which processes gyroscope values.
+         */
+        function callbackOrientation(event) {
+            let alpha = event.alpha;
+            let beta = event.beta;
+            let gamma = event.gamma;
+            
+            document.getElementById("gyro_a").textContent = Math.floor(alpha);
+            document.getElementById("gyro_b").textContent = Math.floor(beta);
+            document.getElementById("gyro_g").textContent = Math.floor(gamma);
+            
+            let top_beta = 35;
+            let bottom_beta = 65;
+            let select_threshold = 20;
+            
+            // Move the horizontal scroll cursor first
+            select_cursor.style.left = Math.max(0, cursor_width * Math.min(1, gamma / select_threshold));
+            
+            // Check if user tilted the device to the right to confirm a selection
+            if (gamma >= select_threshold) {
+                let now = timemilliseconds();
+                
+                // 1000ms minimum between subsequent selections
+                if (!selection_started && (now - last_selection >= 1000)) {
+                    selection_started = true;
+                    last_selection = now;
+                }
+                
+                console.log(last_selection);
+            } else {
+                if (selection_started) {
+                    selection_started = false;
+                    selected_id = -1;
+                }
+                
+                // Interpolate between 50 and 80 degrees, multiply by scrollbar height in pixels
+                cursor_y = (beta - top_beta) / (bottom_beta - top_beta) * bar_height;
+            
+                // Limit the cursor to the scrollbar coordinate space
+                if (cursor_y < 0) {
+                    cursor_y = 0;
+                } else if (cursor_y > bar_height - cursor_height) {
+                    cursor_y = bar_height - cursor_height;
+                }
+                
+                // Reposition the cursor element in the window
+                cursor.style.top = cursor_y;
+            }
+            
+            // Proportion of scroll bar height * 5 menu items to get correct index
+            selectedMenuItem(Math.floor(cursor_y / bar_height * 5), selection_started);
+            
+            // Update the cursor position debug text
+            document.getElementById("cursor_y").textContent = Math.floor(cursor_y);
+        }
+        
+        /*
+         * Returns the current time in milliseconds as a number.
+         */
+        function timemilliseconds() {
+            return Date.now();
+        }
+        
+        /*
+         * Updates the menu to highlighted the selected menu item. Call this function
+         * with a zero-indexed menu item number.
+         */
+        function selectedMenuItem(n, confirmed=false) {
+            let items = document.getElementsByClassName("menuitem");
+            
+            if (n < 0 || n >= items.length) {
+                return;
+            }
+            
+            var i;
+            for (i = 0; i < items.length; i++) {
+                if (i === n) {
+                    if (confirmed) {
+                        cursor.style.backgroundColor = "#f88";
+                        items[i].style.backgroundColor = "#f88";
+                    } else {
+                        cursor.style.backgroundColor = "#26c6da";
+                        items[i].style.backgroundColor = "#26c6da";
+                    }
+                } else {
+                    items[i].style.backgroundColor = "#b2ebf2";
+                }
+            }
+        }
+        
+        /*
+         * Asks iOS 13+ users for permission to access device motion data.
+         */
+        function applePermissions() {
+            if (DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") {
+                DeviceMotionEvent.requestPermission();
+            }
+        }
+        
+        /*
+         * After the page has loaded, add our device motion event listener.
+         */
+        window.onload = function onLoad() {
+            // Initialise menu elements
+            cursor = document.getElementById("cursor");
+            select_cursor = document.getElementById("selectcursor");
+            cursor_height = cursor.getBoundingClientRect().height;
+            cursor_width = cursor.getBoundingClientRect().width;
+            
+            let scrollbar = document.getElementById("scrollbar");
+            bar_top = scrollbar.getBoundingClientRect().top;
+            bar_height = scrollbar.getBoundingClientRect().height;
+            
+            window.addEventListener("deviceorientation", callbackOrientation);
+        };
+        </script>
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+            }
+        
+            #scrollbar {
+                height:         300px;
+                width:          15%;
+                background:     #e5ffff;
+                vertical-align: top;
+            }
+        
+            #cursor {
+                position:      relative;
+                width:         100%;
+                height:        20px;
+                background:    #26c6da;
+            }
+            
+            #selectbar {
+                height:         20px;
+                width:          100%;
+                background:     #fcc;
+                vertical-align: top;
+            }
+            
+            #selectcursor {
+                position:      relative;
+                width:         20px;
+                height:        100%;
+                background:    #f88;
+            }
+            
+            .menuitem {
+                width:       85%;
+                height:      60px;
+                background:  #b2ebf2;
+                padding:     4px;
+                border-left: 4px solid #26c6da;
+            }
+            
+            button {
+                padding: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Orientation</h1>
+        <ul>
+          <li>Alpha: <span id="gyro_a">0</span></li>
+          <li>Beta: <span id="gyro_b">0</span></li>
+          <li>Gamma: <span id="gyro_g">0</span></li>
+        </ul>
+        
+        <h1>Menu</h1>
+        <table style="width: 30%;">
+            <tbody>
+                <tr style="height: 40px;">
+                    <td id="scrollbar" rowspan="5">
+                        <div id="cursor" />
+                    </td>
+                    <td class="menuitem">Apple</td>
+                </tr>
+                <tr style="height: 40px;">
+                    <td class="menuitem">Banana</td>
+                </tr>
+                <tr style="height: 40px;">
+                    <td class="menuitem">Grapefruit</td>
+                </tr>
+                <tr style="height: 40px;">
+                    <td class="menuitem">Orange</td>
+                </tr>
+                <tr style="height: 40px;">
+                    <td class="menuitem">Peach</td>
+                </tr>
+                <tr style="height: 20px;">
+                    <td id="selectbar" colspan="2">
+                        <div id="selectcursor" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <br />Cursor y coordinate: <span id="cursor_y">null</span>
+        <br /><br /><button onclick="applePermissions()">iOS Start</button>
+    </body>
 </html>
