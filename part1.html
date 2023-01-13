@@ -10,7 +10,18 @@
       let peak_z = 0;
       let count = 0;
       let last_shake = 0;
-        
+      
+      /*
+       * Utility function for setting motion value text colour.
+       */
+      function setMotionLabelColor(color) {
+        var acc_fields = document.getElementsByClassName('acc');
+          for (var i = 0; i < acc_fields.length; ++i) {
+              var item = acc_fields[i];  
+              item.setAttribute('style', 'color: ' + color);
+          }
+      }
+      
       /*
        * A device motion callback function, which processes accelerometer values.
        */
@@ -40,15 +51,17 @@
         document.getElementById("peak_z").textContent = roundNumber(peak_z);
 
         // Implement your shake gesture detector here
-        if (false) {
+        if (false) { // <--- threshold test
           shakeGestureDetected();
-        } else {
           
+          setMotionLabelColor("orangered");
+        } else {
+          setMotionLabelColor("black");
         }
       }
 
       /*
-       * Utility function for rounding a float to two decimal places.
+       * Utility function for rounding a float.
        */
       function roundNumber(x) {
         return Math.round((x + Number.EPSILON) * 100) / 100;
@@ -104,9 +117,9 @@
     <!-- Live display of sensor values -->
     <h1>Current</h1>
     <ul>
-      <li>X: <span id="acc_x">0</span></li>
-      <li>Y: <span id="acc_y">0</span></li>
-      <li>Z: <span id="acc_z">0</span></li>
+      <li>X: <span id="acc_x" class="acc">0</span></li>
+      <li>Y: <span id="acc_y" class="acc">0</span></li>
+      <li>Z: <span id="acc_z" class="acc">0</span></li>
     </ul>
 
     <h1>Peak (absolute)</h1>
