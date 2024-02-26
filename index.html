@@ -29,14 +29,17 @@
         if (e.deltaTime <= max_duration) {
           if (e.deltaX >= major_threshold) {
             if (Math.abs(e.deltaY) <= minor_threshold) {
-              swipeRight();
+              selection_started = true;
+              last_selection = now;
               
             } else {
-              unrecognised();
+              selection_started = false;
+              selected_id = -1;
             }
           } 
         } else {
-          unrecognised();
+          selection_started = false;
+          selected_id = -1;
         }
       }
 
