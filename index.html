@@ -4,6 +4,70 @@
     <meta charset="utf-8" />
     <title>Tilt Menu</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://hammerjs.github.io/dist/hammer.js" defer></script>
+    <script defer>
+      let hammer = null;
+      let touchArea = null;
+      let gestureDeltaX = null;
+      let gestureDeltaY = null;
+      let gestureDistance = null;
+      let gestureDuration = null;
+
+      /*
+       * Swipe gesture callback, fired after a swipe has been detected.
+       */
+      function onSwipe(e) {
+        gestureDeltaX.textContent = e.deltaX;
+        gestureDeltaY.textContent = e.deltaY;
+        gestureDistance.textContent = roundNumber(e.distance);
+        gestureDuration.textContent = e.deltaTime;
+
+        let minor_threshold = 100;
+        let major_threshold = 300;
+        let max_duration = 300;
+
+        if (e.deltaTime <= max_duration) {
+          if (e.deltaX >= major_threshold) {
+            if (Math.abs(e.deltaY) <= minor_threshold) {
+              swipeRight();
+              
+            } else {
+              unrecognised();
+            }
+          } 
+        } else {
+          unrecognised();
+        }
+      }
+
+      /*
+       * Utility function for rounding a float to two decimal places.
+       */
+      function roundNumber(x) {
+        return Math.round((x + Number.EPSILON) * 100) / 100;
+      }
+
+      /*
+       * Init HammerJS and set up basic swipe gesture listener.
+       */
+      window.onload = function onLoad() {
+        touchArea = document.getElementById("panel");
+        touchArea.style.height = window.innerHeight * 0.5 + "px";
+
+        gestureDeltaX = document.getElementById("ges_delta_x");
+        gestureDeltaY = document.getElementById("ges_delta_y");
+        gestureDistance = document.getElementById("ges_distance");
+        gestureDuration = document.getElementById("ges_duration");
+
+        hammer = new Hammer.Manager(touchArea, {
+        recognizers: [
+            [Hammer.Swipe, {direction: Hammer.DIRECTION_ALL}]
+        ]
+        });
+
+        hammer.on("swipe", onSwipe);
+      }
+    </script>
     <script>
       let cursor = null;
       let cursor_y = 0;
