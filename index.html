@@ -6,6 +6,21 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://hammerjs.github.io/dist/hammer.js" defer></script>
     <script defer>
+      let cursor = null;
+      let cursor_y = 0;
+      let cursor_height = 0;
+      let cursor_width = 0;
+      let select_cursor = null;
+      let bar_top = 0;
+      let bar_height = 0;
+      let selection_started = false;
+      let last_selection = 0;
+      let selected_id = -1;
+      
+      
+      
+      
+      
       let hammer = null;
       let touchArea = null;
       let gestureDeltaX = null;
@@ -53,35 +68,23 @@
       /*
        * Init HammerJS and set up basic swipe gesture listener.
        */
-      window.onload = function onLoad() {
-        touchArea = document.getElementById("panel");
-        touchArea.style.height = window.innerHeight * 0.5 + "px";
-
-        gestureDeltaX = document.getElementById("ges_delta_x");
-        gestureDeltaY = document.getElementById("ges_delta_y");
-        gestureDistance = document.getElementById("ges_distance");
-        gestureDuration = document.getElementById("ges_duration");
-
-        hammer = new Hammer.Manager(touchArea, {
-        recognizers: [
-            [Hammer.Swipe, {direction: Hammer.DIRECTION_ALL}]
-        ]
-        });
-
-        hammer.on("swipe", onSwipe);
-      }
-    </script>
-    <script>
-      let cursor = null;
-      let cursor_y = 0;
-      let cursor_height = 0;
-      let cursor_width = 0;
-      let select_cursor = null;
-      let bar_top = 0;
-      let bar_height = 0;
-      let selection_started = false;
-      let last_selection = 0;
-      let selected_id = -1;
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
 
       /*
        * Returns the current time in milliseconds as a number.
@@ -200,6 +203,26 @@
         bar_height = scrollbar.getBoundingClientRect().height;
 
         window.addEventListener("deviceorientation", callbackOrientation);
+        
+        
+        
+        touchArea = document.getElementById("panel");
+        touchArea.style.height = window.innerHeight * 0.5 + "px";
+
+        gestureDeltaX = document.getElementById("ges_delta_x");
+        gestureDeltaY = document.getElementById("ges_delta_y");
+        gestureDistance = document.getElementById("ges_distance");
+        gestureDuration = document.getElementById("ges_duration");
+
+        hammer = new Hammer.Manager(touchArea, {
+        recognizers: [
+            [Hammer.Swipe, {direction: Hammer.DIRECTION_ALL}]
+        ]
+        });
+
+        hammer.on("swipe", onSwipe);
+        
+        
       };
     </script>
   </head>
@@ -234,15 +257,9 @@
         <tr>
           <td class="menuitem">Peach</td>
         </tr>
-        <tr>
-          <td id="selectbar" colspan="2">
-            <div id="selectcursor" />
-          </td>
-        </tr>
       </tbody>
     </table>
-
-    <p>Cursor y coordinate: <span id="cursor_y">null</span></p>
+    <div id="panel">Swipe</div>
     
     <!-- Trigger permissions popup on Apple devices -->
     <button onclick="applePermissions()">iOS Start</button>
