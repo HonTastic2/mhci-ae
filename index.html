@@ -55,18 +55,17 @@
           let now = timeMilliseconds();
 
           // 1000ms minimum between subsequent selections
-          if (!selection_started && now - last_selection >= 1000) {
-            selection_started = true;
-            last_selection = now;
-          }
+          selection_started = true;
+          last_selection = now;
+          
 
           console.log(last_selection);
         } else {
-          if (selection_started) {
-            selection_started = false;
+//           if (selection_started) {
+//             selection_started = false;
             
-            selected_id = -1;
-          }
+//             selected_id = -1;
+//           }
 
           // Interpolate between the upper and lower values (in degrees), multiply by scrollbar height in pixels
           cursor_y = ((beta - top_beta) / (bottom_beta - top_beta)) * bar_height;
