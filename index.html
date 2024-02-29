@@ -31,32 +31,7 @@
       /*
        * Swipe gesture callback, fired after a swipe has been detected.
        */
-      function onSwipe(e) {
-        gestureDeltaX.textContent = e.deltaX;
-        gestureDeltaY.textContent = e.deltaY;
-        gestureDistance.textContent = roundNumber(e.distance);
-        gestureDuration.textContent = e.deltaTime;
-
-        let minor_threshold = 100;
-        let major_threshold = 300;
-        let max_duration = 300;
-
-        if (e.deltaTime <= max_duration) {
-          if (e.deltaX >= major_threshold) {
-            if (Math.abs(e.deltaY) <= minor_threshold) {
-              selection_started = true;
-              last_selection = now;
-              
-            } else {
-              selection_started = false;
-              selected_id = -1;
-            }
-          } 
-        } else {
-          selection_started = false;
-          selected_id = -1;
-        }
-      }
+      
 
       /*
        * Utility function for rounding a float to two decimal places.
@@ -68,22 +43,6 @@
       /*
        * Init HammerJS and set up basic swipe gesture listener.
        */
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
       
 
       /*
@@ -110,38 +69,38 @@
         let select_threshold = 20;
 
         // Move the horizontal scroll cursor first
-        select_cursor.style.left = Math.max(0, cursor_width * Math.min(1, gamma / select_threshold)) + "px";
+//         select_cursor.style.left = Math.max(0, cursor_width * Math.min(1, gamma / select_threshold)) + "px";
 
-        // Check if user tilted the device to the right to confirm a selection
-        if (gamma >= select_threshold) {
-          let now = timeMilliseconds();
+//         // Check if user tilted the device to the right to confirm a selection
+//         if (gamma >= select_threshold) {
+//           let now = timeMilliseconds();
 
-          // 1000ms minimum between subsequent selections
-          if (!selection_started && now - last_selection >= 1000) {
-            selection_started = true;
-            last_selection = now;
-          }
+//           // 1000ms minimum between subsequent selections
+//           if (!selection_started && now - last_selection >= 1000) {
+//             selection_started = true;
+//             last_selection = now;
+//           }
 
-          console.log(last_selection);
-        } else {
-          if (selection_started) {
-            selection_started = false;
-            selected_id = -1;
-          }
+//           console.log(last_selection);
+//         } else {
+//           if (selection_started) {
+//             selection_started = false;
+//             selected_id = -1;
+//           }
 
-          // Interpolate between the upper and lower values (in degrees), multiply by scrollbar height in pixels
-          cursor_y = ((beta - top_beta) / (bottom_beta - top_beta)) * bar_height;
+//           // Interpolate between the upper and lower values (in degrees), multiply by scrollbar height in pixels
+//           cursor_y = ((beta - top_beta) / (bottom_beta - top_beta)) * bar_height;
 
-          // Limit the cursor to the scrollbar coordinate space
-          if (cursor_y < 0) {
-            cursor_y = 0;
-          } else if (cursor_y > bar_height - cursor_height) {
-            cursor_y = bar_height - cursor_height;
-          }
+//           // Limit the cursor to the scrollbar coordinate space
+//           if (cursor_y < 0) {
+//             cursor_y = 0;
+//           } else if (cursor_y > bar_height - cursor_height) {
+//             cursor_y = bar_height - cursor_height;
+//           }
 
-          // Reposition the cursor element in the window
-          cursor.style.top = cursor_y + "px";
-        }
+//           // Reposition the cursor element in the window
+//           cursor.style.top = cursor_y + "px";
+//         }
 
         // Proportion of scroll bar height * 5 menu items to get correct index
         selectedMenuItem(
@@ -185,6 +144,33 @@
       function applePermissions() {
         if (DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") {
           DeviceMotionEvent.requestPermission();
+        }
+      }
+      
+      function onSwipe(e) {
+        gestureDeltaX.textContent = e.deltaX;
+        gestureDeltaY.textContent = e.deltaY;
+        gestureDistance.textContent = roundNumber(e.distance);
+        gestureDuration.textContent = e.deltaTime;
+
+        let minor_threshold = 100;
+        let major_threshold = 300;
+        let max_duration = 300;
+
+        if (e.deltaTime <= max_duration) {
+          if (e.deltaX >= major_threshold) {
+            if (Math.abs(e.deltaY) <= minor_threshold) {
+              selection_started = true;
+              last_selection = now;
+              
+            } else {
+              selection_started = false;
+              selected_id = -1;
+            }
+          } 
+        } else {
+          selection_started = false;
+          selected_id = -1;
         }
       }
 
