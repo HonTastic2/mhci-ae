@@ -3,13 +3,33 @@
   <head>
     <meta charset="utf-8" />
     <title>Tilt Menu</title>
-    <link rel="stylesheet" href="style.css" />
-    <script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://hammerjs.github.io/dist/hammer.js" defer></script>
+    <script defer>
       let cursor = null;
+      let cursor_y = 0;
       let cursor_height = 0;
+      let cursor_width = 0;
+      let select_cursor = null;
       let bar_top = 0;
       let bar_height = 0;
+      let selection_started = false;
+      let last_selection = 0;
+      let selected_id = -1;
+      let hammer = null;
+      let touchArea = null;
+      let gestureDeltaX = null;
+      let gestureDeltaY = null;
+      let gestureDistance = null;
+      let gestureDuration = null;
 
+      /*
+       * Returns the current time in milliseconds as a number.
+       */
+      function timeMilliseconds() {
+        return Date.now();
+      }
+      
       /*
        * Device orientation callback -- called each time sensor updates.
        */
@@ -22,38 +42,74 @@
         document.getElementById("gyro_b").textContent = Math.floor(beta);
         document.getElementById("gyro_g").textContent = Math.floor(gamma);
 
-//         let cursor_y = 0; // <---- Implement the menu scroll code here
+        let top_beta = 35;
+        let bottom_beta = 65;
+        let select_threshold = 20;
 
-//         // Limit the cursor to the scrollbar coordinate space
-//         if (cursor_y < 0) {
-//           cursor_y = 0;
-//         } else if (cursor_y > (bar_height - cursor_height)) {
-//           cursor_y = bar_max - cursor_height;
-//         }
+        // Move the horizontal scroll cursor first
+        select_cursor.style.left = Math.max(0, cursor_width * Math.min(1, gamma / select_threshold)) + "px";
 
-        // Reposition the cursor element in the window
-        // cursor.style.top = cursor_y + "px";
+        // Check if user tilted the device to the right to confirm a selection
+        if (gamma >= select_threshold) {
+          let now = timeMilliseconds();
 
-        selectedMenuItem(-1); // <---- Implement menu item highlighting here
+          // 1000ms minimum between subsequent selections
+          if (!selection_started && now - last_selection >= 1000) {
+            selection_started = true;
+            last_selection = now;
+          }
+
+          console.log(last_selection);
+        } else {
+          if (selection_started) {
+            selection_started = false;
+            selected_id = -1;
+          }
+
+          // Interpolate between the upper and lower values (in degrees), multiply by scrollbar height in pixels
+          cursor_y = ((beta - top_beta) / (bottom_beta - top_beta)) * bar_height;
+
+          // Limit the cursor to the scrollbar coordinate space
+          if (cursor_y < 0) {
+            cursor_y = 0;
+          } else if (cursor_y > bar_height - cursor_height) {
+            cursor_y = bar_height - cursor_height;
+          }
+
+          // Reposition the cursor element in the window
+          cursor.style.top = cursor_y + "px";
+        }
+
+        // Proportion of scroll bar height * 5 menu items to get correct index
+        selectedMenuItem(
+          Math.floor((cursor_y / bar_height) * 5),
+          selection_started
+        );
 
         // Update the cursor position debug text
-        // document.getElementById("cursor_y").textContent = Math.floor(cursor_y);
+        document.getElementById("cursor_y").textContent = Math.floor(cursor_y);
       }
 
       /*
        * Updates the menu to highlighted the selected menu item. Call this function
        * with a zero-indexed menu item number.
        */
-      function selectedMenuItem(n) {
+      function selectedMenuItem(n, confirmed = false) {
         let items = document.getElementsByClassName("menuitem");
 
         if (n < 0 || n >= items.length) {
           return;
         }
-
+        
         for (var i = 0; i < items.length; i++) {
           if (i === n) {
-            items[i].style.backgroundColor = "#26c6da";
+            if (confirmed) {
+              cursor.style.backgroundColor = "#ff8888";
+              items[i].style.backgroundColor = "#ff8888";
+            } else {
+              cursor.style.backgroundColor = "#26c6da";
+              items[i].style.backgroundColor = "#26c6da";
+            }
           } else {
             items[i].style.backgroundColor = "#b2ebf2";
           }
@@ -68,6 +124,49 @@
           DeviceMotionEvent.requestPermission();
         }
       }
+      
+      /*
+       * Swipe gesture callback, fired after a swipe has been detected.
+       */
+      function onSwipe(e) {
+        gestureDeltaX.textContent = e.deltaX;
+        gestureDeltaY.textContent = e.deltaY;
+        gestureDistance.textContent = roundNumber(e.distance);
+        gestureDuration.textContent = e.deltaTime;
+
+        let minor_threshold = 100;
+        let major_threshold = 300;
+        let max_duration = 300;
+
+        if (e.deltaTime <= max_duration) {
+          if (e.deltaX >= major_threshold) {
+            if (Math.abs(e.deltaY) <= minor_threshold) {
+              swipeRight();
+            } else {
+              unrecognised();
+            }
+          } else if (e.deltaX <= -major_threshold) {
+            if (Math.abs(e.deltaY) <= minor_threshold) {
+              swipeLeft();
+            } else {
+              unrecognised();
+            }
+          } else if (e.deltaX >= -minor_threshold && e.deltaX <= minor_threshold) {
+            if (e.deltaY <= -major_threshold) {
+              swipeUp();
+            } else if (e.deltaY >= major_threshold) {
+              swipeDown();
+            } else {
+              unrecognised();
+            }
+          } else {
+            unrecognised();
+          }
+        } else {
+          unrecognised();
+        }
+      }
+      
 
       /*
        * After the page has loaded, add our device motion event listener.
@@ -75,13 +174,36 @@
       window.onload = function onLoad() {
         // Initialise menu elements
         cursor = document.getElementById("cursor");
+        select_cursor = document.getElementById("selectcursor");
         cursor_height = cursor.getBoundingClientRect().height;
+        cursor_width = cursor.getBoundingClientRect().width;
 
-        // let scrollbar = document.getElementById("scrollbar");
-        // bar_top = scrollbar.getBoundingClientRect().top;
-        // bar_height = scrollbar.getBoundingClientRect().height;
+        let scrollbar = document.getElementById("scrollbar");
+        bar_top = scrollbar.getBoundingClientRect().top;
+        bar_height = scrollbar.getBoundingClientRect().height;
 
         window.addEventListener("deviceorientation", callbackOrientation);
+        
+        
+        /*
+       * Init HammerJS and set up basic swipe gesture listener.
+       */
+        touchArea = document.getElementById("panel");
+        touchArea.style.height = window.innerHeight * 0.1 + "px";
+
+        gestureDeltaX = document.getElementById("ges_delta_x");
+        gestureDeltaY = document.getElementById("ges_delta_y");
+        gestureDistance = document.getElementById("ges_distance");
+        gestureDuration = document.getElementById("ges_duration");
+
+        hammer = new Hammer.Manager(touchArea, {
+        recognizers: [
+            [Hammer.Swipe, {direction: Hammer.DIRECTION_ALL}]
+        ]
+        });
+
+        hammer.on("swipe", onSwipe);
+        
       };
     </script>
   </head>
@@ -116,15 +238,19 @@
           <td class="menuitem">Peach</td>
         </tr>
         <tr>
-          <td id="selectbar" colspan="2">
-            <div id="selectcursor" />
-          </td>
         </tr>
       </tbody>
     </table>
+    <div id="panel">Swipe</div>
+    <ul>
+      <li>Δx: <span id="ges_delta_x">0</span></li>
+      <li>Δy: <span id="ges_delta_y">0</span></li>
+      <li>Distance: <span id="ges_distance">0</span></li>
+      <li>Duration: <span id="ges_duration">0</span></li>
+    </ul>
 
 <!--     <p>Cursor y coordinate: <span id="cursor_y">null</span></p> -->
-
+    
     <!-- Trigger permissions popup on Apple devices -->
     <button onclick="applePermissions()">iOS Start</button>
   </body>

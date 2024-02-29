@@ -13,6 +13,22 @@ body {
   vertical-align: top;
 }
 
+#panel {
+  width: 50%;
+  height: 0px;
+  background: repeating-linear-gradient(
+    45deg,
+    #b3e5fc,
+    #b3e5fc 20px,
+    #e1f5fe 20px,
+    #e1f5fe 40px
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10vw;
+}
+
 #cursor {
   position: relative;
   width: 100%;
