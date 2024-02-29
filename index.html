@@ -22,6 +22,7 @@
       let gestureDeltaY = null;
       let gestureDistance = null;
       let gestureDuration = null;
+      let has_swiped = false;
 
       /*
        * Returns the current time in milliseconds as a number.
@@ -47,9 +48,9 @@
         let select_threshold = 20;
 
         // Move the horizontal scroll cursor first
-        select_cursor.style.left = Math.max(0, cursor_width * Math.min(1, gamma / select_threshold)) + "px";
+        // select_cursor.style.left = Math.max(0, cursor_width * Math.min(1, gamma / select_threshold)) + "px";
 
-        // Check if user tilted the device to the right to confirm a selection
+        // Check if user swiped to the right to confirm a selection
         if (gamma >= select_threshold) {
           let now = timeMilliseconds();
 
@@ -63,6 +64,7 @@
         } else {
           if (selection_started) {
             selection_started = false;
+            
             selected_id = -1;
           }
 
@@ -141,7 +143,7 @@
         if (e.deltaTime <= max_duration) {
           if (e.deltaX >= major_threshold) {
             if (Math.abs(e.deltaY) <= minor_threshold) {
-              swipeRight();
+              has_swiped = true;
             } else {
               unrecognised();
             }
