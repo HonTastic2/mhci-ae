@@ -135,7 +135,7 @@
         gestureDuration.textContent = e.deltaTime;
 
         let minor_threshold = 100;
-        let major_threshold = 300;
+        let major_threshold = 500;
         let max_duration = 300;
 
         if (e.deltaTime <= max_duration) {
@@ -203,7 +203,7 @@
         });
 
         hammer.on("swipe", onSwipe);
-        
+      
       };
     </script>
   </head>
