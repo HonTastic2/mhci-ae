@@ -22,7 +22,7 @@
       let gestureDeltaY = null;
       let gestureDistance = null;
       let gestureDuration = null;
-      let has_swiped = false;
+      var has_swiped = false;
 
       /*
        * Returns the current time in milliseconds as a number.
@@ -51,7 +51,7 @@
         // select_cursor.style.left = Math.max(0, cursor_width * Math.min(1, gamma / select_threshold)) + "px";
 
         // Check if user swiped to the right to confirm a selection
-        if (gamma >= select_threshold) {
+        if (has_swiped) {
           let now = timeMilliseconds();
 
           // 1000ms minimum between subsequent selections
