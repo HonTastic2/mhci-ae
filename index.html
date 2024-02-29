@@ -31,6 +31,10 @@
         return Date.now();
       }
       
+      function roundNumber(x) {
+        return Math.round((x + Number.EPSILON) * 100) / 100;
+      }
+      
       /*
        * Device orientation callback -- called each time sensor updates.
        */
@@ -140,31 +144,32 @@
         let max_duration = 300;
 
         if (e.deltaTime <= max_duration) {
-          if (e.deltaX >= major_threshold) {
+          if (e.deltaX <= major_threshold) {
             if (Math.abs(e.deltaY) <= minor_threshold) {
               has_swiped = true;
+              console.log("test");
             } else {
-              unrecognised();
+              console.log("1");
             }
           } else if (e.deltaX <= -major_threshold) {
             if (Math.abs(e.deltaY) <= minor_threshold) {
-              swipeLeft();
+              console.log("2");
             } else {
-              unrecognised();
+              console.log("3");
             }
           } else if (e.deltaX >= -minor_threshold && e.deltaX <= minor_threshold) {
             if (e.deltaY <= -major_threshold) {
-              swipeUp();
+              console.log("4");
             } else if (e.deltaY >= major_threshold) {
-              swipeDown();
+              console.log("5");
             } else {
-              unrecognised();
+              console.log("6");
             }
           } else {
-            unrecognised();
+            console.log("7");
           }
         } else {
-          unrecognised();
+          console.log("8");
         }
       }
       
