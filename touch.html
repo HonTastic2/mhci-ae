@@ -1,12 +1,15 @@
 <script>
-  function myFunction() {
-    document.getElementById('demo').style.color = '#FF0000';
+  function myFunction(id) {
+    document.getElementById(id).style.color = '#FF0000';
   }
 </script>
 <link rel="stylesheet" href="style.css">
 
+
+<div class="flex-container">
 <button id="1" onclick="myFunction(1)">Option 1</button>
-<button onclick="myFunction()">Option 2</button>
-<button onclick="myFunction()">Option 3</button>
-<button onclick="myFunction()">Option 4</button>
-<button onclick="myFunction()">Option 5</button>
+<button id="2" onclick="myFunction(2)">Option 2</button>
+<button id="3" onclick="myFunction(3)">Option 3</button>
+<button id="4" onclick="myFunction(4)">Option 4</button>
+<button id="5" onclick="myFunction(5)">Option 5</button>
+</div>
